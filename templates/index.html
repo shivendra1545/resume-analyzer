@@ -1,81 +1,95 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Automated Resume Analyzer</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automated Resume Analyzer</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
 <body>
-    <main class="container">
-        <section class="card">
-            <h1>Automated Resume Analyzer</h1>
-            <p class="subtitle">
-                Upload a PDF or DOCX resume to extract structured information.
-            </p>
+<main class="container">
+<section class="card">
+<h1>Automated Resume Analyzer</h1>
+<p class="subtitle">Upload a PDF or DOCX resume to extract structured information.</p>
 
-            <form id="resumeForm">
-                <input
-                    id="resume"
-                    name="resume"
-                    type="file"
-                    accept=".pdf,.docx"
-                    required
-                >
+<form id="resumeForm">
+<input id="resume" name="resume" type="file" accept=".pdf,.docx" required>
+<button type="submit" id="analyzeBtn">Analyze Resume</button>
+</form>
 
-                <button type="submit">Analyze Resume</button>
-            </form>
+<p id="status"></p>
+<div class="result-box" id="result">Analysis result will appear here.</div>
+</section>
+</main>
 
-            <p id="status"></p>
+<script>
+const form = document.getElementById("resumeForm");
+const status = document.getElementById("status");
+const result = document.getElementById("result");
+const button = document.getElementById("analyzeBtn");
 
-            <div class="result-box">
-                <pre id="result">Analysis result will appear here.</pre>
-            </div>
-        </section>
-    </main>
+const escapeHTML = value => String(value ?? "Not detected").replace(/[&<>"']/g, c => ({
+"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[c]));
 
-    <script>
-        const form = document.getElementById("resumeForm");
-        const status = document.getElementById("status");
-        const result = document.getElementById("result");
+function section(title, content) {
+return `<section class="result-section"><h3>${title}</h3>${content}</section>`;
+}
 
-        form.addEventListener("submit", async (event) => {
-            event.preventDefault();
+function details(data) {
+return Object.entries(data).map(([key,value]) =>
+`<div class="detail"><strong>${escapeHTML(key.replaceAll("_"," "))}</strong>
+<p>${escapeHTML(Array.isArray(value) ? value.join(", ") : value)}</p></div>`
+).join("");
+}
 
-            const file = document.getElementById("resume").files[0];
+function render(data) {
+let html = `<h2>Resume Analysis Results</h2>`;
 
-            if (!file) {
-                status.textContent = "Please select a resume.";
-                return;
-            }
+if (data.candidate)
+html += section("Candidate Information", `<div class="details-grid">${details(data.candidate)}</div>`);
 
-            const formData = new FormData();
-            formData.append("resume", file);
+if (data.contact)
+html += section("Contact Details", `<div class="details-grid">${details(data.contact)}</div>`);
 
-            status.textContent = "Analyzing resume...";
-            result.textContent = "";
+if (data.skills || data.extracted_skills) {
+const skills = data.skills || data.extracted_skills;
+html += section("Skills", `<div class="tag-list">${(Array.isArray(skills) ? skills : Object.values(skills)).map(s => `<span class="tag">${escapeHTML(s)}</span>`).join("")}</div>`);
+}
 
-            try {
-                const response = await fetch("/analyze", {
-                    method: "POST",
-                    body: formData
-                });
+["education","experience","entities"].forEach(key => {
+if (data[key]) html += section(key.charAt(0).toUpperCase()+key.slice(1),
+`<pre>${escapeHTML(JSON.stringify(data[key],null,2))}</pre>`);
+});
 
-                const data = await response.json();
+html += `<details><summary>View Complete JSON</summary><pre>${escapeHTML(JSON.stringify(data,null,2))}</pre></details>`;
+result.innerHTML = html;
+}
 
-                if (!response.ok) {
-                    throw new Error(data.details || data.error || "Analysis failed.");
-                }
+form.addEventListener("submit", async e => {
+e.preventDefault();
+const file = document.getElementById("resume").files[0];
+if (!file) return;
 
-                status.textContent = "Analysis completed successfully.";
-                result.textContent = JSON.stringify(data, null, 4);
+const formData = new FormData();
+formData.append("resume",file);
+status.textContent = "Analyzing resume...";
+result.innerHTML = "";
+button.disabled = true;
 
-            } catch (error) {
-                status.textContent = "Error: " + error.message;
-                result.textContent = "";
-            }
-        });
-    </script>
+try {
+const response = await fetch("/analyze",{method:"POST",body:formData});
+const data = await response.json();
+if (!response.ok) throw new Error(data.error || data.details || "Analysis failed");
+render(data);
+status.textContent = "Analysis completed successfully.";
+} catch(error) {
+status.textContent = "Error: " + error.message;
+} finally {
+button.disabled = false;
+}
+});
+</script>
 </body>
 </html>
