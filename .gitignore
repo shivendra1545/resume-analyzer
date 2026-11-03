@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+*.pyc
+.env
+.vscode/
+.idea/
+output/*
+!output/.gitkeep
+
+test_resumes/*
+!test_resumes/.gitkeep

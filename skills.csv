@@ -1,0 +1,39 @@
+skill,category,aliases
+Python,Programming,
+C++,Programming,
+Java,Programming,
+JavaScript,Programming,JS
+TypeScript,Programming,TS
+React,Web Development,React.js|ReactJS
+HTML,Web Development,HTML5
+CSS,Web Development,CSS3
+Flask,Web Development,
+Django,Web Development,
+Node.js,Web Development,NodeJS
+Express.js,Web Development,Express
+Machine Learning,Artificial Intelligence,ML
+Deep Learning,Artificial Intelligence,DL
+Artificial Intelligence,Artificial Intelligence,AI
+Natural Language Processing,Artificial Intelligence,NLP
+Computer Vision,Artificial Intelligence,CV
+TensorFlow,Artificial Intelligence,
+PyTorch,Artificial Intelligence,
+Scikit-learn,Artificial Intelligence,sklearn
+Pandas,Data Science,
+NumPy,Data Science,numpy
+Matplotlib,Data Science,
+Seaborn,Data Science,
+SQL,Database,
+MySQL,Database,
+PostgreSQL,Database,
+MongoDB,Database,
+Git,Tools,
+GitHub,Tools,
+Docker,Tools,
+AWS,Cloud,
+Azure,Cloud,
+Communication,Soft Skill,
+Leadership,Soft Skill,
+Teamwork,Soft Skill,
+Problem Solving,Soft Skill,
+Project Management,Soft Skill,
