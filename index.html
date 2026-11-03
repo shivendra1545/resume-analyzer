@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated Resume Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <main class="container">
+        <section class="card">
+            <h1>Automated Resume Analyzer</h1>
+            <p class="subtitle">
+                Upload a PDF or DOCX resume to extract structured information.
+            </p>
+
+            <form id="resumeForm">
+                <input
+                    id="resume"
+                    name="resume"
+                    type="file"
+                    accept=".pdf,.docx"
+                    required
+                >
+
+                <button type="submit">Analyze Resume</button>
+            </form>
+
+            <p id="status"></p>
+
+            <div class="result-box">
+                <pre id="result">Analysis result will appear here.</pre>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const form = document.getElementById("resumeForm");
+        const status = document.getElementById("status");
+        const result = document.getElementById("result");
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const file = document.getElementById("resume").files[0];
+
+            if (!file) {
+                status.textContent = "Please select a resume.";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("resume", file);
+
+            status.textContent = "Analyzing resume...";
+            result.textContent = "";
+
+            try {
+                const response = await fetch("/analyze", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.details || data.error || "Analysis failed.");
+                }
+
+                status.textContent = "Analysis completed successfully.";
+                result.textContent = JSON.stringify(data, null, 4);
+
+            } catch (error) {
+                status.textContent = "Error: " + error.message;
+                result.textContent = "";
+            }
+        });
+    </script>
+</body>
+</html>
